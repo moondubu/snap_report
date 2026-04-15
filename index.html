@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스냅솔루션 리포트</title>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --panel: #14181d;
+      --panel-2: #1a2027;
+      --line: #2a313b;
+      --text: #eef2f7;
+      --muted: #a3adba;
+      --point: #ffb347;
+      --point-soft: rgba(255, 179, 71, 0.12);
+      --green: #54d2a0;
+      --red: #ff7f7f;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(255, 179, 71, 0.08), transparent 28%),
+        linear-gradient(180deg, #0a0c0f 0%, #0f1318 100%);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    .layout {
+      width: min(1480px, calc(100% - 64px));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 32px;
+      padding: 32px 0 72px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      background: rgba(20, 24, 29, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(18px);
+      border-radius: 22px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--point);
+      background: var(--point-soft);
+      border: 1px solid rgba(255, 179, 71, 0.2);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
+    .sidebar .eyebrow,
+    .hero .eyebrow {
+      margin-bottom: 12px;
+    }
+
+    .sidebar h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    .sidebar p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toc {
+      display: grid;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .toc a {
+      padding: 12px 14px;
+      border-radius: 14px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      transition: 0.2s ease;
+    }
+
+    .toc a:hover {
+      color: var(--text);
+      border-color: rgba(255, 179, 71, 0.28);
+      background: rgba(255, 179, 71, 0.08);
+    }
+
+    .meta {
+      margin-top: 24px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .content {
+      display: grid;
+      gap: 30px;
+    }
+
+    .hero,
+    .section,
+    .figure-card {
+      background: rgba(20, 24, 29, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 24px;
+      padding: 36px;
+      box-shadow: var(--shadow);
+    }
+
+    .figure-card {
+      margin: 0;
+    }
+
+    /* 섹션 안 figure-card는 카드 스타일 제거 */
+    .section .figure-card,
+    .section .mini-grid .figure-card {
+      background: none;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    /* mini-grid 안 figure-card는 별도 divider 없음 */
+    .mini-grid .figure-card.section-block {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .hero h2,
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 30px;
+      line-height: 1.25;
+    }
+
+    .section h2 {
+      font-size: 24px;
+      margin-bottom: 18px;
+    }
+
+    .lead,
+    .section-intro {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 22px;
+      margin-top: 28px;
+    }
+
+    .card {
+      grid-column: span 4;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 18px;
+      padding: 22px;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+    }
+
+    .card p,
+    .mini-card p,
+    .bullet-list li,
+    .note,
+    table {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 32px;
+    }
+
+    /* 이미지 그리드는 세로선 없이 gap만 */
+    .img-grid > *:not(:first-child) {
+      border-left: none;
+      padding-left: 0;
+    }
+
+    .img-grid {
+      gap: 16px;
+    }
+
+    /* mini-grid 컬럼 사이 세로 구분선 */
+    .mini-grid > *:not(:first-child) {
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      padding-left: 32px;
+    }
+
+    .mini-card {
+      padding: 0;
+    }
+
+    /* section-block으로 단독 사용 시 상단 디바이더 */
+    .mini-card.section-block {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 24px;
+      margin-top: 24px;
+    }
+
+    /* mini-grid 안 mini-card는 디바이더 없이 plain */
+    .mini-grid .mini-card {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .mini-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .mini-card-header h3 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .badge.confirmed {
+      color: var(--green);
+      border-color: rgba(84, 210, 160, 0.24);
+      background: rgba(84, 210, 160, 0.1);
+    }
+
+    .badge.pending {
+      color: var(--point);
+      border-color: rgba(255, 179, 71, 0.24);
+      background: rgba(255, 179, 71, 0.1);
+    }
+
+    .badge.risk {
+      color: var(--red);
+      border-color: rgba(255, 127, 127, 0.24);
+      background: rgba(255, 127, 127, 0.1);
+    }
+
+    .bullet-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .bullet-list li + li {
+      margin-top: 8px;
+    }
+
+    .section-block {
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 24px;
+    }
+
+    .highlight {
+      border: 1px solid rgba(255, 179, 71, 0.22);
+      background: rgba(255, 179, 71, 0.04);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-top: 24px;
+    }
+
+    .highlight strong {
+      color: var(--text);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+      background: var(--panel-2);
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    th {
+      color: var(--text);
+      font-size: 13px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .figure-card img {
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: zoom-in;
+    }
+
+    .caption {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .footnote {
+      font-size: 12px;
+      color: #8d97a5;
+      margin-top: 14px;
+    }
+
+    .image-modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      background: rgba(5, 7, 10, 0.82);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+      z-index: 999;
+    }
+
+    .image-modal.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .image-modal-dialog {
+      position: relative;
+      width: auto;
+      max-width: calc(100vw - 64px);
+      max-height: calc(100vh - 64px);
+      padding: 0;
+      border-radius: 24px;
+      background: rgba(20, 24, 29, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .image-modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      background: rgba(12, 15, 19, 0.96);
+      color: var(--text);
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+      z-index: 1;
+    }
+
+    .image-modal img {
+      width: auto;
+      max-width: 100%;
+      max-height: calc(100vh - 120px);
+      object-fit: contain;
+      border-radius: 18px;
+      display: block;
+    }
+
+    @media (max-width: 1080px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .card {
+        grid-column: span 6;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .layout {
+        width: min(100% - 24px, 1480px);
+      }
+
+      .hero,
+      .section,
+      .figure-card,
+      .sidebar {
+        padding: 24px;
+        border-radius: 20px;
+      }
+
+      .card,
+      .mini-card {
+        grid-column: span 12 !important;
+      }
+
+      .mini-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .mini-grid > *:not(:first-child) {
+        border-left: none;
+        padding-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 24px;
+      }
+
+      .hero h2 {
+        font-size: 24px;
+      }
+
+      .image-modal {
+        padding: 16px;
+      }
+
+      .image-modal-dialog {
+        border-radius: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <span class="eyebrow">SNAP SOLUTION</span>
+      <h1>스냅솔루션 리포트</h1>
+
+      <nav class="toc">
+        <a href="#summary">Summary</a>
+        <a href="#snapreview">1. 스냅리뷰</a>
+        <a href="#snappush">2. 스냅푸시</a>
+        <a href="#compare">3. 카페24 기본 기능 비교</a>
+        <a href="#usage">4. 페스룸 사용 현황</a>
+        <a href="#replace">5. 대체 시 필요사항</a>
+        <a href="#recipe">6. 번외 - 카페24 레시피</a>
+      </nav>
+
+      <div class="meta">
+        <div><strong>대상</strong> 스냅리뷰 · 스냅푸시</div>
+        <div><strong>배경</strong> 반응형 스킨 이전 — 스크립트 전수조사</div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section id="summary" class="hero">
+        <span class="eyebrow">SUMMARY</span>
+        <h2>스냅리뷰 · 스냅푸시 기능 및 검수 범위</h2>
+        <p class="lead">스냅리뷰는 리뷰 보상·노출·통계 기능을 제공하며, 스냅푸시는 페이지별 스크립트를 통해 타겟 수집·메시지 발송·온사이트 노출을 처리합니다. 이번 반응형 스킨 이전에 따른 전수조사에서 스냅리뷰는 화면별 리뷰 템플릿의 디바이스별 정상 노출 여부를, 스냅푸시는 주요 페이지의 스크립트 누락 여부를 확인합니다.</p>
+
+        <div class="grid">
+          <article class="card" style="grid-column: span 6;">
+            <h3>스냅리뷰</h3>
+            <p>리뷰 유형별 적립금 차등 설정, 리뷰 노출 템플릿 관리, 리뷰 운영 지표(작성률·평점·답변율) 확인. 검수 대상은 디바이스별 리뷰 템플릿 노출.</p>
+          </article>
+          <article class="card" style="grid-column: span 6;">
+            <h3>스냅푸시</h3>
+            <p>행동 기반 타겟 수집, 카카오톡/문자 캠페인 발송, 온사이트 팝업·배너 노출, 캠페인 성과 리포트. 검수 대상은 페이지별 스크립트 삽입 여부.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="snapreview" class="section">
+        <h2>1. 스냅리뷰</h2>
+
+        <article class="mini-card section-block">
+          <div class="mini-card-header">
+            <h3>기능</h3>
+            <div class="badge-row">
+              <span class="badge">적립금</span>
+              <span class="badge">템플릿</span>
+              <span class="badge">통계</span>
+            </div>
+          </div>
+          <ul class="bullet-list">
+            <li><strong>텍스트 / 포토 / 영상</strong> 리뷰별 적립금 차등 설정</li>
+            <li><strong>글자 수 구간별</strong>(예: 50자 이상 / 10~50자 / 10자 미만) 적립금 조건</li>
+            <li>상품 가격, 구매 금액, <strong>작성 순서(선착순 등)</strong> 기준 지급 조건</li>
+            <li>기본 리뷰 / <strong>한달 사용 리뷰(추가 리뷰)</strong> 적립금 별도 설정</li>
+            <li><strong>리뷰 작성률, 불만족 리뷰 비율, 답변율, 평균 평점</strong> 등 운영 지표</li>
+            <li><strong>시장 평균</strong> 대비 상태 비교 (대시보드)</li>
+            <li>리뷰 노출 <strong>위젯 및 템플릿</strong> 설정</li>
+          </ul>
+        </article>
+
+        <figure class="figure-card section-block">
+          <img src="./assets/img_sanp_review_mileage.png" alt="스냅리뷰 적립금 설정 화면" data-zoomable>
+          <figcaption class="caption">스냅리뷰 적립금 설정 화면 — 글자 수, 주문/상품 금액 조건에 따라 텍스트·포토·영상 리뷰 적립금이 다르게 설정되어 있습니다.</figcaption>
+        </figure>
+
+        <div class="highlight">
+          <strong>검수 범위:</strong> 사용 중인 각 화면(상품상세, 리뷰 리스트, 포토·영상 리뷰 영역)의 리뷰 템플릿이 PC/모바일에서 정상 노출되는지 확인(완료). 스킨 변경 후 디바이스별 템플릿 정상 노출 모니터링
+        </div>
+      </section>
+
+      <section id="snappush" class="section">
+        <h2>2. 스냅푸시</h2>
+
+        <article class="mini-card section-block">
+          <div class="mini-card-header">
+            <h3>기능</h3>
+            <div class="badge-row">
+              <span class="badge">캠페인</span>
+              <span class="badge">온사이트</span>
+              <span class="badge">타겟팅</span>
+              <span class="badge">리포트</span>
+            </div>
+          </div>
+          <ul class="bullet-list">
+            <li><strong>카카오 알림톡, 친구톡, SMS/LMS</strong> 캠페인 발송</li>
+            <li><strong>이탈 고객, 장바구니 미결제 고객</strong> 등 조건별 자동 발송</li>
+            <li>쿠폰 팝업, 회원가입 유도 배너 등 <strong>온사이트 디자인</strong> 노출</li>
+            <li><strong>SCRM</strong> 기반 고객 세그먼트 생성 및 타겟 관리</li>
+            <li>카페24 회원/주문 데이터 <strong>동기화 (스냅 싱크)</strong></li>
+            <li>카카오모먼트 광고 연동</li>
+            <li>캠페인별 <strong>매출 전환, 상품 유입, 사용자 이탈</strong> 등 성과 리포트</li>
+          </ul>
+        </article>
+
+        <div class="mini-grid img-grid section-block">
+          <figure class="figure-card">
+            <img src="./assets/img_snap_push_campaign.png" alt="스냅푸시 캠페인 관리 화면" data-zoomable>
+            <figcaption class="caption">스냅푸시 캠페인 관리 — 카카오톡/문자 발송 설정 및 조건별 자동 발송 화면</figcaption>
+          </figure>
+          <figure class="figure-card">
+            <img src="./assets/img_sanp_push_CRMpng" alt="스냅푸시 SCRM 타겟 관리 화면" data-zoomable>
+            <figcaption class="caption">스냅푸시 SCRM — 고객 행동 기반 타겟 세그먼트 생성 및 관리 화면</figcaption>
+          </figure>
+        </div>
+
+        <table class="section-block">
+          <thead>
+            <tr>
+              <th>기능 구분</th>
+              <th>동작</th>
+              <th>스크립트 누락 시 영향</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>캠페인 발송</td>
+              <td>카카오톡/문자 메시지 자동 발송</td>
+              <td>발송 트리거 조건 미충족</td>
+            </tr>
+            <tr>
+              <td>온사이트 디자인</td>
+              <td>팝업, 배너 노출</td>
+              <td>팝업/배너 미노출</td>
+            </tr>
+            <tr>
+              <td>타겟 수집</td>
+              <td>SCRM 행동 데이터 수집</td>
+              <td>타겟 세그먼트 생성 불가</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="highlight">
+          <strong>검수 범위:</strong> 메인, 상품목록, 장바구니 등 주요 페이지에 스냅푸시 스크립트가 누락 없이 삽입되어 있는지 확인.
+        </div>
+      </section>
+
+      <section id="compare" class="section">
+        <h2>3. 카페24 기본 기능 비교</h2>
+
+        <table class="section-block">
+          <thead>
+            <tr>
+              <th>구분</th>
+              <th>카페24 기본</th>
+              <th>스냅솔루션</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>리뷰 적립금</td>
+              <td>일괄 지급만 가능</td>
+              <td>리뷰 유형·글자 수·상품 가격·구매 금액별 차등 설정</td>
+            </tr>
+            <tr>
+              <td>리뷰 통계</td>
+              <td>기본 리뷰 목록 확인</td>
+              <td>작성률, 답변율, 불만족 비율, 시장 평균 비교 대시보드</td>
+            </tr>
+            <tr>
+              <td>리뷰 노출</td>
+              <td>기본 게시판 형태</td>
+              <td>위젯·템플릿 기반 노출 설정</td>
+            </tr>
+            <tr>
+              <td>메시지 발송</td>
+              <td>기본 공지 / 일부 알림</td>
+              <td>행동 기반 조건 자동 발송 (카카오톡, SMS/LMS)</td>
+            </tr>
+            <tr>
+              <td>타겟팅</td>
+              <td>회원 등급 기반</td>
+              <td>SCRM — 접속 이력, 조회 상품, 이탈 행동 등 행동 기반</td>
+            </tr>
+            <tr>
+              <td>온사이트 노출</td>
+              <td>기본 팝업 기능</td>
+              <td>조건별 팝업·배너 디자인 설정 및 노출 제어</td>
+            </tr>
+            <tr>
+              <td>성과 분석</td>
+              <td>기본 매출 통계</td>
+              <td>캠페인별 매출 전환, 상품 유입, 이탈 분석 리포트</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="usage" class="section">
+        <h2>4. 페스룸 사용 현황</h2>
+        <p style="color: var(--muted); font-size: 14px; margin-bottom: 24px;">skin43 소스 파일 기준 스크립트 삽입 현황 (백업·테스트 파일 제외)</p>
+
+        <article class="mini-card section-block">
+          <div class="mini-card-header">
+            <h3>공통 (레이아웃)</h3>
+            <span class="badge">snap common · 회원 연동</span>
+          </div>
+          <ul class="bullet-list">
+            <li><code style="color: var(--muted); font-size: 12px;">layout.html</code>, <code style="color: var(--muted); font-size: 12px;">main.html</code>, <code style="color: var(--muted); font-size: 12px;">shopform_layout.html</code> — 스냅 공통 스크립트 삽입</li>
+            <li>store_id: <strong>pethroom</strong>, 회원 정보(id, group_name, name) 연동</li>
+            <li>카페24 앱 자동 주입으로 <strong>snaptag.js</strong>(추적 스크립트)가 모든 응답 HTML에 포함됨</li>
+          </ul>
+        </article>
+
+        <article class="mini-card section-block">
+          <div class="mini-card-header">
+            <h3>스냅리뷰</h3>
+            <span class="badge">위젯 7곳 · JS 9곳</span>
+          </div>
+          <p style="color: var(--muted); font-size: 13px; margin-bottom: 8px;"><strong style="color: var(--text);">리뷰 위젯(snap_widget)</strong> 삽입 페이지</p>
+          <ul class="bullet-list">
+            <li><strong>product/detail.html</strong> — 썸네일 요약, 영상 리뷰, 메인 리뷰, 옵션 리뷰 위젯 4개</li>
+            <li><strong>product/detail_vipMall.html</strong> — VIP몰 상품상세</li>
+            <li><strong>product/list_subs.html</strong> — 정기배송 상품목록</li>
+            <li><strong>product/search.html</strong> — 검색 결과</li>
+            <li><strong>index.html</strong> — 메인 페이지</li>
+            <li><strong>board/product/list.html</strong> — 리뷰 게시판</li>
+            <li><strong>myshop/board_list.html</strong> — 마이페이지 게시글</li>
+          </ul>
+          <p style="color: var(--muted); font-size: 13px; margin-top: 16px; margin-bottom: 8px;"><strong style="color: var(--text);">리뷰 JS</strong>(snap_combine_script / review_independent) 추가 로드</p>
+          <ul class="bullet-list">
+            <li>위 7곳 + <strong>product/list.html</strong>(상품목록), <strong>myshop/order/list.html</strong>(주문내역) — 총 9곳</li>
+          </ul>
+          <p style="color: var(--muted); font-size: 13px; margin-top: 16px; margin-bottom: 8px;"><strong style="color: var(--text);">상품 리스트 아이템</strong>에 리뷰 카운트 표시</p>
+          <ul class="bullet-list">
+            <li><code style="color: var(--muted); font-size: 12px;">product/list/normal_li.html</code> 등 리스트 아이템 템플릿에 <code style="color: var(--muted); font-size: 12px;">snap_review_count</code> 삽입</li>
+          </ul>
+        </article>
+
+        <article class="mini-card section-block">
+          <div class="mini-card-header">
+            <h3>스냅푸시</h3>
+            <span class="badge">spm_f_common.js · 21곳</span>
+          </div>
+          <p style="color: var(--muted); font-size: 13px; margin-bottom: 8px;"><strong style="color: var(--text);">spm_f_common.js</strong> 개별 삽입 페이지</p>
+          <ul class="bullet-list">
+            <li><strong>상품</strong> — detail.html, detail_vipMall.html, list.html, list_subs.html, project.html, search.html</li>
+            <li><strong>주문</strong> — basket.html, orderform.html, order_result.html</li>
+            <li><strong>게시판</strong> — board/product/list.html</li>
+            <li><strong>회원</strong> — login.html, join.html, join_result.html, modify.html, agreement.html, mall_agreement.html, app_login.html</li>
+            <li><strong>마이페이지</strong> — myshop/coupon/coupon.html</li>
+            <li><strong>이벤트</strong> — 202505_vipgiftweek.html, 202506_giveandgift.html</li>
+            <li><strong>메인</strong> — index.html</li>
+          </ul>
+          <p style="color: var(--muted); font-size: 13px; margin-top: 16px; margin-bottom: 8px;"><strong style="color: var(--text);">order_result.html</strong>에만 추가로 <code style="color: var(--muted); font-size: 12px;">push/order.js</code> (주문 완료 전환 추적)</p>
+        </article>
+
+        <div class="highlight">
+          <strong>요약:</strong> 스냅 스크립트는 공통 레이아웃뿐 아니라 <strong>개별 페이지에 직접 삽입</strong>되어 있습니다. 스냅리뷰 위젯 7곳, 리뷰 JS 9곳, 스냅푸시 JS 21곳에 각각 삽입되어 있습니다.
+        </div>
+      </section>
+
+      <section id="replace" class="section">
+        <h2>5. 대체 시 필요사항</h2>
+
+        <div class="mini-grid section-block">
+          <article class="mini-card">
+            <h3>카페24만으로 가능한 범위</h3>
+            <ul class="bullet-list">
+              <li>기본 리뷰 게시판 운영 (일괄 적립금)</li>
+              <li>기본 공지 및 일부 메시지 발송</li>
+              <li>회원 등급 기반 단순 분류</li>
+            </ul>
+          </article>
+
+          <article class="mini-card">
+            <h3>별도 구현이 필요한 항목</h3>
+            <ul class="bullet-list">
+              <li>조건별 적립금 차등 지급 로직</li>
+              <li>리뷰 운영 지표 대시보드</li>
+              <li>페이지별 행동 수집 스크립트</li>
+              <li>행동 기반 타겟 세그먼트 및 자동 발송</li>
+              <li>온사이트 팝업/배너 조건 노출</li>
+              <li>캠페인 성과 측정 체계</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="recipe" class="section">
+        <h2>6. 번외 - 카페24 레시피</h2>
+
+        <article class="mini-card section-block">
+          <div class="mini-card-header">
+            <h3>개요</h3>
+          </div>
+          <p style="color: var(--muted); font-size: 14px; margin: 0;">카페24 레시피는 쇼핑몰 이벤트(트리거)와 동작(액션)을 연결하는 업무 자동화 플랫폼입니다. "리뷰 작성하면 적립금 지급", "주문 접수되면 라인으로 알림" 같은 if-then 패턴으로 약 900여 개의 자동화 패턴을 제공합니다. 카페24 내장 서비스로 무료로 사용 가능합니다.</p>
+        </article>
+
+        <article class="mini-card section-block">
+          <div class="mini-card-header">
+            <h3>주요 기능</h3>
+          </div>
+          <ul class="bullet-list">
+            <li><strong>트리거</strong> — 주문 접수, 리뷰 작성, 회원 가입, 문의 등록, 반품 접수, 스케줄(특정 요일/시간) 등</li>
+            <li><strong>액션</strong> — 라인·텔레그램 알림 발송, 구글시트 데이터 업로드, 상품 정보(해시태그·진열 여부) 자동 수정, 적립금 지급</li>
+            <li>트리거 + 액션을 조합해 나만의 자동화 패턴 생성 가능</li>
+            <li>코드 없이 클릭 몇 번으로 설정 완료</li>
+          </ul>
+        </article>
+
+        <table class="section-block">
+          <thead>
+            <tr>
+              <th>기능 영역</th>
+              <th>레시피로 가능한 범위</th>
+              <th>레시피로 불가능한 범위</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>리뷰 적립금</td>
+              <td>리뷰 작성 시 일괄 적립금 지급 자동화</td>
+              <td>리뷰 유형·글자 수·상품 가격별 차등 지급 조건 없음</td>
+            </tr>
+            <tr>
+              <td>메시지 발송</td>
+              <td>라인, 텔레그램으로 내부 알림 (운영자용)</td>
+              <td>카카오톡 알림톡·친구톡, SMS/LMS 고객 대상 발송 불가</td>
+            </tr>
+            <tr>
+              <td>타겟팅</td>
+              <td>특정 이벤트 발생 시 단순 조건 분기</td>
+              <td>행동 기반 고객 세그먼트(SCRM), 이탈 타겟팅 불가</td>
+            </tr>
+            <tr>
+              <td>온사이트 노출</td>
+              <td>해당 없음</td>
+              <td>팝업·배너 노출, 조건별 온사이트 디자인 불가</td>
+            </tr>
+            <tr>
+              <td>성과 분석</td>
+              <td>구글시트로 데이터 내보내기</td>
+              <td>캠페인 전환 추적, 이탈 분석, 통합 리포트 없음</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="highlight">
+          <strong>판단:</strong> 카페24 레시피는 운영자 내부 알림·단순 반복업무 자동화 도구입니다. 고객 대상 카카오톡 발송, 행동 기반 타겟팅, 온사이트 팝업, 성과 리포트는 지원하지 않으므로 <strong>스냅푸시를 대체하기 어렵습니다.</strong> 스냅리뷰의 리뷰 적립금 지급은 레시피로 일부 자동화할 수 있지만, 차등 조건 로직과 운영 지표 대시보드는 카페24 기본 기능 + 레시피 조합으로 구현이 불가능합니다.
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="image-modal" id="imageModal" aria-hidden="true">
+    <div class="image-modal-dialog">
+      <button class="image-modal-close" id="imageModalClose" type="button" aria-label="확대 이미지 닫기">&times;</button>
+      <img id="imageModalContent" src="" alt="">
+    </div>
+  </div>
+
+  <script>
+    const zoomableImages = document.querySelectorAll("[data-zoomable]");
+    const imageModal = document.getElementById("imageModal");
+    const imageModalContent = document.getElementById("imageModalContent");
+    const imageModalClose = document.getElementById("imageModalClose");
+
+    const openImageModal = (img) => {
+      imageModalContent.src = img.src;
+      imageModalContent.alt = img.alt;
+      imageModal.classList.add("is-open");
+      imageModal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    };
+
+    const closeImageModal = () => {
+      imageModal.classList.remove("is-open");
+      imageModal.setAttribute("aria-hidden", "true");
+      imageModalContent.src = "";
+      imageModalContent.alt = "";
+      document.body.style.overflow = "";
+    };
+
+    zoomableImages.forEach((img) => {
+      img.addEventListener("click", () => openImageModal(img));
+    });
+    imageModalClose.addEventListener("click", closeImageModal);
+    imageModal.addEventListener("click", (event) => {
+      if (event.target === imageModal) {
+        closeImageModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && imageModal.classList.contains("is-open")) {
+        closeImageModal();
+      }
+    });
+  </script>
+</body>
+</html>
